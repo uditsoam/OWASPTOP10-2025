@@ -1,0 +1,285 @@
+# OWASP Top 10:2025 — IAAA Failures (A01, A07, A09)
+
+This document covers three OWASP Top 10 categories related directly to failures in the IAAA security model:
+
+- **A01: Broken Access Control**
+- **A07: Authentication Failures**
+- **A09: Logging & Alerting Failures**
+
+It explains Identity, Authentication, Authorization, and Accountability (IAAA), and how weaknesses here cause critical security issues.
+
+---
+
+# 1. The IAAA Security Model
+
+IAAA defines how a user is identified, verified, allowed access, and monitored.
+
+## 1.1 Identity  
+A unique identifier for a user or service.  
+Examples:
+- `user@example.com`
+- `admin`
+- `customer_103`
+
+Identity tells *who* the user is, but not whether they own that identity.
+
+## 1.2 Authentication  
+Proving that the identity actually belongs to the user.  
+Examples:
+- Passwords
+- OTP
+- MFA
+- Passkeys
+
+If authentication is broken, attackers can impersonate legitimate users.
+
+## 1.3 Authorization  
+Determines what an authenticated user is allowed to do.  
+Examples:
+- Users can only access their own data
+- Admins have elevated privileges
+- Customers cannot access admin endpoints
+
+Authorization fails when the system does not validate user permissions correctly.
+
+## 1.4 Accountability  
+Tracks *who did what, when, and from where.*  
+Implemented through:
+- Logs
+- Security alerts
+- Audit trails
+
+Without accountability, attacks cannot be detected or investigated.
+
+---
+
+# 2. A01 — Broken Access Control
+
+Occurs when the application fails to enforce authorization rules on the server side.
+
+This allows attackers to:
+- View or edit other users’ data
+- Perform admin-only actions
+- Change resources by modifying request parameters (like IDs)
+
+---
+
+## 2.1 IDOR — Insecure Direct Object Reference
+
+IDOR happens when an application exposes internal IDs and does not validate ownership.
+
+### Example Scenario
+
+A bank account page:
+
+```
+https://bank.example.com/account?accountId=7
+```
+
+The user changes it manually to:
+
+```
+https://bank.example.com/account?accountId=6
+```
+
+If they can now see ANOTHER user's account, this is IDOR.
+
+Reason:
+The server did not verify:  
+**“Is the logged-in user allowed to access accountId=6?”**
+
+---
+
+## 2.2 Horizontal & Vertical Privilege Escalation
+
+### Horizontal Escalation  
+User accesses another user’s data (same role).  
+Example: One student sees another student’s exam marks.
+
+### Vertical Escalation  
+User performs actions of a higher privilege role.  
+Example:
+```
+/admin/deleteUser?id=10
+```
+If accessible to normal users → severe vulnerability.
+
+---
+
+## 2.3 Common Causes
+
+- Missing server-side authorization checks
+- Trusting client-side data (URL, hidden fields, JS)
+- Predictable sequential IDs
+- Broken role/permission logic
+
+---
+
+## 2.4 Mitigation
+
+- Always enforce **server-side access control**
+- Validate object ownership (user owns this resource?)
+- Deny by default
+- Never trust user input for authorization
+- Use non-guessable references where needed
+- Test regularly for privilege escalation and IDOR
+
+---
+
+# 3. A07 — Authentication Failures
+
+Occurs when the system cannot reliably verify identity.
+
+This often leads to:
+- Account takeover
+- Impersonation
+- Unauthorized access
+- Privilege abuse
+
+---
+
+## 3.1 Common Authentication Weaknesses
+
+### 1. Username Enumeration  
+Different error messages for invalid username vs invalid password reveal valid accounts.
+
+Example:
+- “User does not exist”
+- “Incorrect password”
+
+Attackers can harvest valid usernames.
+
+---
+
+### 2. Weak Password Policies & No Rate Limiting  
+- Weak, guessable passwords allowed  
+- Unlimited attempts → brute force possible  
+- No captchas or delays  
+
+---
+
+### 3. Registration Logic Flaws  
+Case-insensitive username confusion:
+
+Real admin:
+```
+admin
+```
+
+Attacker registers:
+```
+aDmiN
+```
+
+If the system normalizes usernames internally, attacker might access admin-level functionality.
+
+---
+
+### 4. Insecure Session Handling  
+Examples:
+- Predictable session IDs  
+- No session rotation after login  
+- Session not invalidated on logout  
+- Cookies missing:
+  - `HttpOnly`
+  - `Secure`
+  - `SameSite`
+
+These flaws lead to session hijacking or fixation.
+
+---
+
+## 3.2 Example Scenario — Username Trick
+
+Attacker knows admin username = `admin`.
+
+Registers:
+```
+aDmiN
+```
+
+If:
+- Database stores both as different
+- BUT application compares usernames case-insensitively
+
+→ The attacker may impersonate the real admin due to identity confusion.
+
+---
+
+## 3.3 Mitigation
+
+- Enforce unique canonical usernames (`lowercase`)
+- Apply strong password policies
+- Enable login rate limiting & lockouts
+- Use MFA for sensitive accounts
+- Rotate session ID after login and privilege change
+- Add secure cookie attributes
+
+---
+
+# 4. A09 — Logging & Alerting Failures
+
+Logging & alerting failures break **Accountability**.
+
+When logs are missing or incomplete:
+- Attacks go undetected
+- No visibility into what happened
+- No evidence for investigation or compliance
+
+---
+
+## 4.1 What Should Be Logged?
+
+Minimum required:
+- Successful logins  
+- Failed login attempts  
+- Password changes  
+- Password resets  
+- 2FA setup/removal  
+- Role/permission changes  
+- Admin actions  
+- Suspicious events (e.g., brute-force bursts)  
+
+---
+
+## 4.2 Common Failures
+
+- No logs for critical actions
+- Logs stored on the same server → attacker can delete them
+- Vague or missing details (“Something went wrong”)
+- No timestamps, user IDs, or source IPs
+- No alerting on suspicious patterns
+- Very short log retention period
+
+---
+
+## 4.3 Mitigation
+
+- Log all authentication and authorization events
+- Centralize logs in remote systems (SIEM)
+- Protect logs from tampering
+- Create alerts for:
+  - Brute-force attempts  
+  - Privilege escalation  
+  - Multiple failed logins  
+- Keep logs for compliance duration  
+
+---
+
+# 5. Summary Table
+
+| OWASP Category | IAAA Component | Description |
+|----------------|----------------|-------------|
+| **A01: Broken Access Control** | Authorization | Users can access data/actions they should not. |
+| **A07: Authentication Failures** | Authentication | Weak identification & verification mechanisms. |
+| **A09: Logging & Alerting Failures** | Accountability | Missing or weak logging prevents detection. |
+
+---
+
+# Final Key Takeaways
+
+- **A01** → Validate permissions server-side on EVERY request.  
+- **A07** → Strengthen authentication with MFA, rate limits, secure sessions.  
+- **A09** → Without logs, you cannot detect or investigate attacks.  
+
+These three vulnerabilities together show how improper Identity, Authentication, Authorization, and Accountability break the entire security model of an application.
