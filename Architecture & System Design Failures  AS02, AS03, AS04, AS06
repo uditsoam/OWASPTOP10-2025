@@ -1,0 +1,128 @@
+# OWASP Top 10:2025 — Architecture & System Design Failures  
+Covers AS02, AS03, AS04, AS06
+
+---
+
+## AS02: Security Misconfigurations
+
+### What It Is  
+Security misconfigurations occur when systems, servers, or cloud environments are deployed with unsafe defaults, exposed services, outdated software, or weak access controls. These are not coding bugs but failures in how the infrastructure is set up.
+
+### Why It Matters  
+Even a tiny misconfiguration—like a public cloud bucket or default password—can leak sensitive data or provide attackers with an initial foothold.
+
+### Real Example  
+Uber (2017) left an AWS S3 bucket publicly accessible, exposing rider and driver data.  
+This was not a code bug — it was a deployment mistake.
+
+### Common Patterns  
+- Default credentials  
+- Public cloud storage buckets  
+- Unrestricted API access  
+- Verbose error messages  
+- Outdated frameworks  
+- Exposed admin panels  
+- AI/ML endpoints without authentication  
+
+### How To Prevent  
+- Harden configurations & remove unused services  
+- Least privilege enforcement  
+- Patch regularly  
+- Hide stack traces  
+- Audit cloud IAM permissions  
+- Secure AI endpoints  
+- Integrate automated config scanning into CI/CD  
+
+---
+
+## AS03: Software Supply Chain Failures
+
+### What It Is  
+Supply chain failures occur when external components — libraries, APIs, models, or build pipelines — are compromised, outdated, or unverified.
+
+### Why It Matters  
+Modern applications rely heavily on third-party components.  
+If one dependency is compromised, your entire system is compromised.
+
+### Real Example: SolarWinds (2021)  
+Attackers injected malicious code into a trusted software update, compromising thousands of organisations automatically.
+
+### AI Example  
+Unverified AI models can include hidden backdoors, malicious behavior, or data-leak vulnerabilities.
+
+### Common Patterns  
+- Installing unverified libraries  
+- Auto-updating without integrity checks  
+- Insecure CI/CD pipelines  
+- Dependency confusion  
+- No SBOM tracking  
+- Unmonitored AI models  
+
+### How To Protect  
+- Verify & sign dependencies  
+- Monitor vulnerabilities  
+- Secure CI/CD  
+- Track SBOM (Software Bill of Materials)  
+- Runtime monitoring for AI components  
+- Threat modelling for supply chain risks  
+
+---
+
+## AS04: Cryptographic Failures
+
+### What It Is  
+Cryptographic failures happen when encryption is missing, weak, or incorrectly implemented. This leads to exposure of sensitive data like passwords, tokens, and personal information.
+
+### Why It Matters  
+Cryptography protects data at rest and in transit. Misuse allows attackers to intercept or decrypt information.
+
+### Common Patterns  
+- Deprecated hashes (MD5, SHA-1)  
+- Hard-coded secrets  
+- No TLS or invalid certificates  
+- No encryption for sensitive data  
+- Weak cipher modes like ECB  
+- Leaky AI models exposing unencrypted secrets  
+
+### How To Prevent  
+- Use modern algorithms (AES-GCM, ChaCha20-Poly1305)  
+- Enforce TLS 1.3  
+- Use KMS (AWS KMS, Azure Vault)  
+- Regular secret rotation  
+- No hard-coded keys  
+- Proper certificate lifecycle management  
+- Protect AI/ML models against secret exposure  
+
+---
+
+## AS06: Insecure Design
+
+### What It Is  
+Insecure design happens when fundamental architectural or logical flaws exist in the system before code is even written. You cannot patch insecure design — only redesign.
+
+### Real Example: Clubhouse API  
+Backend API had no authentication.
+Anyone could query private user data directly.
+
+### Why It Matters  
+Design flaws break the system at its core.  
+Fixing them requires re-thinking logic, workflows, and trust boundaries.
+
+### Common Insecure Designs in 2025  
+- Weak business logic  
+- Missing threat modelling  
+- AI agents with excessive authority  
+- Prompt injection vulnerabilities  
+- Unvalidated AI decision-making  
+- Debug bypasses left in production  
+
+### How To Design Securely  
+- Treat AI models as untrusted  
+- Validate model inputs & outputs  
+- Separate system prompts from user prompts  
+- Apply least privilege  
+- Add human review for risky actions  
+- Apply abuse-case and AI threat modelling  
+- Secure architecture at every stage  
+- Verify dependencies and supply chain integrity  
+
