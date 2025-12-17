@@ -1,0 +1,77 @@
+# OWASP Top 10 – Security Concepts & Practicals
+
+## 1. Cryptographic Failures
+
+### Definition
+Cryptographic failures occur when sensitive data is not properly protected due to missing encryption, weak algorithms, or incorrect implementation.
+
+### Common Causes
+- Plaintext password storage
+- Weak algorithms (MD5, SHA1, DES)
+- Hardcoded encryption keys
+- Custom / homemade cryptography
+- Insecure data transmission (no HTTPS)
+
+### Prevention
+- Use bcrypt, scrypt, or Argon2 for password hashing
+- Use trusted encryption algorithms (AES, RSA)
+- Never store secrets in source code
+- Use secure secret management systems
+
+### Practical
+A vulnerable note-sharing service uses a weak shared derived key. The objective is to decrypt all notes and retrieve the flag.
+
+---
+
+## 2. Injection
+
+### Definition
+Injection vulnerabilities occur when untrusted user input is directly passed to an interpreter such as a database, OS, or template engine.
+
+### Types
+- SQL Injection
+- Command Injection
+- Server Side Template Injection (SSTI)
+- Prompt Injection
+
+### SSTI Overview
+SSTI occurs when user input is rendered directly inside server-side templates, allowing attackers to execute expressions or system commands.
+
+### Prevention
+- Use prepared statements for databases
+- Avoid shell execution
+- Escape and validate user input
+- Never render raw user input in templates
+
+### Practical
+The lab demonstrates SSTI exploitation to retrieve a flag from the server.
+
+---
+
+## 3. Software & Data Integrity Failures
+
+### Definition
+These failures occur when applications trust code, updates, or data without verifying integrity or authenticity.
+
+### Common Causes
+- Unverified software updates
+- Unsafe deserialization
+- Compromised CI/CD pipelines
+- Trusting external data sources
+
+### Deserialization Risk
+Unsafe deserialization (e.g., Python pickle) can lead to remote code execution.
+
+### Prevention
+- Never deserialize untrusted data
+- Use safe formats like JSON
+- Validate integrity using hashes and signatures
+- Secure build and deployment pipelines
+
+### Practical
+The lab demonstrates a Python deserialization attack using malicious input to retrieve a flag.
+
+---
+
+## Conclusion
+OWASP Top 10 vulnerabilities remain relevant due to insecure coding practices. Proper input handling, cryptographic hygiene, and integrity verification are critical to building secure applications.
